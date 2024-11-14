@@ -1,4 +1,4 @@
-def pcorr4sql(asql=f""" select {",".join([])} from  Summary""", cosineThrd=0, imshow=False, dobokeh=False, bokehSquareSize=1):
+def pcorr4sql(asql=f""" select {",".join(lstFeatures40)} from  {prfx}ReferralNPISummary_HCPCS""", cosineThrd=0, imshow=False, dobokeh=False, bokehSquareSize=1):
     from pyspark.mllib.linalg.distributed import RowMatrix
     from pyspark.sql import functions as F
     # from pyspark.mllib.linalg import Vectors    
@@ -101,9 +101,10 @@ def bokeh4pcorr_v1(rmat, labels, ncolors=9, height=800, width=800, title="Pearso
     html=file_html(fig, CDN, title)
     displayHTML(html)
     # bokeh.io.show(fig)
-def bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation"):
+def bokeh4pcorr(rmat, labels,cmap='coolwarm',  width=800, height=800, title="Pearson Correlation", theme='light_minimal'):
     import numpy as np
     import bisect
+    import matplotlib as mpl
     from bokeh.plotting import figure, show
     from bokeh.palettes import Viridis256, Cividis256, Turbo256, RdBu11
     # from bokeh.transform import linear_cmap
@@ -113,18 +114,28 @@ def bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation"
     N=len(labels)
     # cmap=list(linear_cmap(field_name='pcorr', palette='Turbo256', low=-1, high=1))    
     # display(cmap)
-    colors=list(reversed(Turbo256)) #list(reversed(RdBu11)) #
-    def get_colors(corrArray, colors):
+    # colors=list(reversed(Turbo256)) #list(reversed(RdBu11)) #
+    # def get_colors(rmat, colors, amin=-1, amax=1):
+    def get_colors(rmat, cmap='coolwarm', amin=-1, amax=1, ncolors=256):
         """Aligns color values from palette with the correlation coefficient values"""
-        ccorr = np.arange(-1, 1, 1/(len(colors)/2))
-        color = []
-        for value in corrArray:
-            ind = bisect.bisect_left(ccorr, value)
-            color.append(colors[ind-1])
-        return color    
+        # ccorr = np.arange(amin, amax, 1/ncolors)
+        colorMat = ['']*np.prod(rmat.shape)
+        cmap=mpl.colormaps.get_cmap(cmap)
+        norm=mpl.colors.Normalize(vmin=amin, vmax=amax)
+        for i,value in enumerate(rmat.flat):
+            # ind = bisect.bisect_left(ccorr, value)
+            # color.append(colors[ind-1])
+            rgba=cmap(norm(value))
+            colorMat[i]=f'{mpl.colors.to_hex(rgba)}'
+        #for colorbar
+        colors=['']*(ncolors)
+        for i,value in enumerate(np.arange(amin, amax, 1/(ncolors/2))):   
+            rgba=cmap(norm(value))            
+            colors[i]=f'{mpl.colors.to_hex(rgba)}'
+        return colorMat , colors
     xname = []
     yname = []
-    color = get_colors(list(rmat.flat), colors = colors)
+    colorMat, colors = get_colors(rmat,cmap='coolwarm', amin=-1, amax=1)
     alpha = [] # [1]*N*N
     for i, nodeR in enumerate(labels):
         for j, nodeC in enumerate(labels):
@@ -132,8 +143,8 @@ def bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation"
             yname.append(nodeC)
             alpha.append(min(rmat[i,j], 0.9) + 0.1 ) 
             # color.append(cmap[int(np.clip(np.floor((rmat[i,j] + 1) / 2 * (len(cmap) - 1)), 0, len(cmap) - 1))])
-    data=dict(xname=xname, yname=yname, colors=color, alphas=alpha, pcorr=list(rmat.flat))
-    fig =figure(title=title, width=width, height=height, x_axis_location='above', tools='hover,save', x_range=list(reversed(labels)), y_range=labels, tooltips=[('var', '@yname, @xname'), ('pcorr', '@pcorr')])
+    data=dict(xname=xname, yname=yname, colors=colorMat, alphas=alpha, pcorr=list(rmat.flat))
+    fig =figure(title=title, width=width, height=height, x_axis_location='above', tools='hover,save', x_range=list(reversed(labels)), y_range=labels, tooltips=[('y/x', '@yname\n @xname'), ('pcorr', '@pcorr')])
     fig.grid.grid_line_color = None
     fig.axis.axis_line_color = None
     fig.axis.major_tick_line_color = None
@@ -148,11 +159,15 @@ def bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation"
     fig.add_layout(color_bar, 'right')
     #display in Databricks
     from bokeh.embed import components, file_html
-    from bokeh.resources import CDN    
+    from bokeh.resources import CDN
+    from bokeh.io import curdoc
+    curdoc().theme=theme #or 'caliber'    
     html=file_html(fig, CDN, title)
     displayHTML(html)
 
-# rmat, rsim, labels=pcorr4sql(f""" select {",".join(lstFeatures40)} from  Summary""", imshow=True)
+# rmat, rsim, labels=pcorr4sql(f""" select {",".join(lstFeatures40)} from Summary""", imshow=True)
 # # bokeh4pcorr_v1(rmat,labels, width=800,height=800, title="Pearson Correlation Coefficient Heatmap")
-# bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation")
+# bokeh4pcorr(rmat, labels, width=900, height=800, title="Pearson Correlation")
 # # displayHTML('test/bokeh.html')
+
+
