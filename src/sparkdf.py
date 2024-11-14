@@ -143,8 +143,12 @@ def bokeh4pcorr(rmat, labels,cmap='coolwarm',  width=800, height=800, title="Pea
             yname.append(nodeC)
             alpha.append(min(rmat[i,j], 0.9) + 0.1 ) 
             # color.append(cmap[int(np.clip(np.floor((rmat[i,j] + 1) / 2 * (len(cmap) - 1)), 0, len(cmap) - 1))])
+    #set theme before calling fig            
+    from bokeh.io import curdoc
+    curdoc().theme=theme #or 'caliber'    
+    #prepare data source
     data=dict(xname=xname, yname=yname, colors=colorMat, alphas=alpha, pcorr=list(rmat.flat))
-    fig =figure(title=title, width=width, height=height, x_axis_location='above', tools='hover,save', x_range=list(reversed(labels)), y_range=labels, tooltips=[('y/x', '@yname\n @xname'), ('pcorr', '@pcorr')])
+    fig =figure(title=title, width=width, height=height, x_axis_location='above', tools='hover,save', x_range=list(reversed(labels)), y_range=labels, tooltips=[('row', '@yname'), ('col', '@xname'), ('pcorr', '@pcorr')], background_fill_color='#ffffff', background_fill_alpha =1)
     fig.grid.grid_line_color = None
     fig.axis.axis_line_color = None
     fig.axis.major_tick_line_color = None
@@ -159,15 +163,11 @@ def bokeh4pcorr(rmat, labels,cmap='coolwarm',  width=800, height=800, title="Pea
     fig.add_layout(color_bar, 'right')
     #display in Databricks
     from bokeh.embed import components, file_html
-    from bokeh.resources import CDN
-    from bokeh.io import curdoc
-    curdoc().theme=theme #or 'caliber'    
+    from bokeh.resources import CDN    
     html=file_html(fig, CDN, title)
     displayHTML(html)
 
-# rmat, rsim, labels=pcorr4sql(f""" select {",".join(lstFeatures40)} from Summary""", imshow=True)
+# rmat, rsim, labels=pcorr4sql(f""" select {",".join(lstFeatures40)} from  Summary""", imshow=True)
 # # bokeh4pcorr_v1(rmat,labels, width=800,height=800, title="Pearson Correlation Coefficient Heatmap")
 # bokeh4pcorr(rmat, labels, width=900, height=800, title="Pearson Correlation")
 # # displayHTML('test/bokeh.html')
-
-
