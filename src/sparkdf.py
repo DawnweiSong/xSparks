@@ -105,7 +105,7 @@ def bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation"
     import numpy as np
     import bisect
     from bokeh.plotting import figure, show
-    from bokeh.palettes import Viridis256, Cividis256, Turbo256
+    from bokeh.palettes import Viridis256, Cividis256, Turbo256, RdBu11
     # from bokeh.transform import linear_cmap
     from bokeh.models import LinearColorMapper, ColorBar
     # from bokeh.sampledata.les_mis import data
@@ -113,7 +113,7 @@ def bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation"
     N=len(labels)
     # cmap=list(linear_cmap(field_name='pcorr', palette='Turbo256', low=-1, high=1))    
     # display(cmap)
-    colors=list(reversed(Turbo256))
+    colors=list(reversed(Turbo256)) #list(reversed(RdBu11)) #
     def get_colors(corrArray, colors):
         """Aligns color values from palette with the correlation coefficient values"""
         ccorr = np.arange(-1, 1, 1/(len(colors)/2))
@@ -141,7 +141,7 @@ def bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation"
     fig.axis.major_label_standoff = 0
     fig.xaxis.major_label_orientation = np.pi/4
     # fig.yaxis.major_label_orientation = np.pi/4
-    fig.rect('xname', 'yname', 0.9, 0.9, source=data, color='colors', alpha='alphas', line_color=None, hover_line_color='black', hover_color='colors')
+    fig.rect('xname', 'yname', 1, 1, source=data, color='colors', alpha='alphas', line_color=None, hover_line_color='black', hover_color='colors')
     # Setup color bar
     mapper = LinearColorMapper(palette=colors, low=-1, high=1)
     color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
