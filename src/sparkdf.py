@@ -1,4 +1,4 @@
-def pcorr4sql(asql=f""" select {",".join(lstFeatures40)} from  {prfx}ReferralNPISummary_HCPCS""", cosineThrd=0, imshow=False, dobokeh=False, bokehSquareSize=1):
+def pcorr4sql(asql=f""" select {",".join([])} from  Summary""", cosineThrd=0, imshow=False, dobokeh=False, bokehSquareSize=1):
     from pyspark.mllib.linalg.distributed import RowMatrix
     from pyspark.sql import functions as F
     # from pyspark.mllib.linalg import Vectors    
@@ -152,7 +152,7 @@ def bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation"
     html=file_html(fig, CDN, title)
     displayHTML(html)
 
-# rmat, rsim, labels=pcorr4sql(f""" select {",".join(lstFeatures40)} from  {prfx}ReferralNPISummary_HCPCS""", imshow=True)
+# rmat, rsim, labels=pcorr4sql(f""" select {",".join(lstFeatures40)} from  Summary""", imshow=True)
 # # bokeh4pcorr_v1(rmat,labels, width=800,height=800, title="Pearson Correlation Coefficient Heatmap")
 # bokeh4pcorr(rmat, labels, width=800, height=800, title="Pearson Correlation")
 # # displayHTML('test/bokeh.html')
